@@ -1,3 +1,4 @@
+
 function [data] = pool_data_per_query(query)
     
     function results = compare_var(var,query)
@@ -70,8 +71,9 @@ function [data] = pool_data_per_query(query)
         end
         date = nameFolds{f}(11:end);
         new_dir = [D '/' nameFolds{f}];
-        listing = dir(fullfile(new_dir, 'var_*.mat')); % counts the numebr of files in the subfolder
-        num_trials = length(listing); % number of trials
+        listing = dir(new_dir); % counts the numebr of files in the subfolder
+        listing = listing(3:end);
+        num_trials = length(listing)/2; % number of trials (because var and traj file for each)
         
         % loop through all trials per recording day
         
@@ -83,10 +85,7 @@ function [data] = pool_data_per_query(query)
             var = NaN;
             load(var_file)
             
-            if(~isstruct(var))
-                warning(['Invalid VAR file: ' var_file ', skipping']);
-                continue;
-            end
+            if()
             
             if compare_var(var.variables,query) 
                 
