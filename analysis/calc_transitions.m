@@ -1,0 +1,69 @@
+
+% count transitions from one side of the arena to the other
+
+thres_up = 150;
+thres_down = -150;
+
+names = fieldnames(data);
+
+dim_n = zeros(2,length(names)); 
+
+for n = 1:length(names)
+       %fieldname = names{n};
+       dim_n(:,n) = size(data.(names{n}).Ypos);
+end
+
+num_replicates = dim_n(2,:);
+
+frames = dim(1,1);
+time_sec = frames / 25; % frames rate = 25
+time = (0.04:0.04:time_sec);
+
+position_score = struct;
+transition_score = NaN(max(num_replicates),length(names));
+
+for n = 1:length(names)
+    fieldname = names{n};
+        
+        
+        top = (data.(fieldname).Y_dist >= thres_up);
+        down = (data.(fieldname).Y_dist <= thres_down);
+        
+        middle = ~(top | down);
+        
+        total = ups + middle *2 + down *3;
+        
+        position_score.(fieldname) = total;
+        
+        index = 1;
+        
+        for a = 1:num_replicates(n)
+            
+            A = [];
+            
+            for fr = 2:frames
+                
+                if position_score.(fieldname)(fr,a) ~= position_score.(fieldname)(fr-1,a)
+                   
+                    A(index) = position_score.(fieldname)(fr-1,a);
+                    index = index +1;
+                    
+                end
+            end
+            
+            A(index) = position_score.(fieldname)(frames,a);
+            
+            trans = A(1:end-2) == 1 & A(2:end-1) == 2 & A(3:end) == 3; 
+            down_cross = sum(trans);
+            
+            trans2 = A(1:end-2) == 3 & A(2:end-1) == 2 & A(3:end) == 1; 
+            up_cross = sum(trans2);
+            
+            transition = down_cross + up_cross;
+            transition_score(:,a) = transition;
+            %clear A
+        end
+end
+
+figure
+hist(transition_score)
