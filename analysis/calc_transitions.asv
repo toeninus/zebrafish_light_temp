@@ -58,7 +58,7 @@ for n = 1:length(names)
             up_cross = sum(trans2);
             
             transition = down_cross + up_cross;
-            transition_score(a,n) = transition;
+            transition_score(:,a) = transition;
             %clear A
         end
 end
