@@ -24,43 +24,18 @@ transition_score = NaN(max(num_replicates),length(names));
 
 for n = 1:length(names)
     fieldname = names{n};
-        
-        
-        top = (data.(fieldname).Y_dist >= thres_up);
-        down = (data.(fieldname).Y_dist <= thres_down);
-        
-        middle = ~(top | down);
-        
-        total = top + middle *2 + down *3;
-        
-        position_score.(fieldname) = total;
-       
-        for a = 1:num_replicates(n)
-            index = 1;
-            A = [];
+    
+    for a = 1:num_replicates(n)
+    
+        [ transitions, labels ] = ...
+            find_transitions( ...
+                data.(fieldname).Y_dist(:, a), ...
+                [thres_down, thres_up], ...
+                {[1 2 3], [3 2 1]});
             
-            for fr = 2:frames
-                
-                if position_score.(fieldname)(fr,a) ~= position_score.(fieldname)(fr-1,a)
-                   
-                    A(index) = position_score.(fieldname)(fr-1,a);
-                    index = index +1;
-                    
-                end
-            end
-            
-            A(index) = position_score.(fieldname)(frames,a);
-            
-            trans = A(1:end-2) == 1 & A(2:end-1) == 2 & A(3:end) == 3; 
-            down_cross = sum(trans);
-            
-            trans2 = A(1:end-2) == 3 & A(2:end-1) == 2 & A(3:end) == 1; 
-            up_cross = sum(trans2);
-            
-            transition = down_cross + up_cross;
-            transition_score(a,n) = transition;
-            %clear A
-        end
+        position_score.(fieldname)(:, a) = labels;
+        transition_score(a, n) = numel(transitions);
+    end       
 end
 
 figure
